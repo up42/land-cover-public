@@ -16,8 +16,8 @@ def test_train_model_landcover_hr():
         temp = Path(temp)
         mock_data = FILE_DIR / "mock_data"
         subprocess.run(
-            "python3 landcover/train_model_landcover.py --output %s --name test "\
-            "--data_dir %s --training_states test --validation_states test "\
+            "python3 landcover/train_model_landcover.py --output %s --name test "
+            "--data_dir %s --training_states test --validation_states test "
             "--model_type unet --epochs 1 --loss jaccard --batch_size 1"
             % (str(temp), str(mock_data)),
             shell=True,
@@ -36,8 +36,8 @@ def test_train_model_landcover_sr():
         temp = Path(temp)
         mock_data = FILE_DIR / "mock_data"
         subprocess.run(
-            "python3 landcover/train_model_landcover.py --output %s --name test "\
-            "--data_dir %s --training_states test --validation_states test "\
+            "python3 landcover/train_model_landcover.py --output %s --name test "
+            "--data_dir %s --training_states test --validation_states test "
             "--model_type unet --epochs 1 --loss superres --batch_size 1"
             % (str(temp), str(mock_data)),
             shell=True,
@@ -96,8 +96,8 @@ def test_train_test_model_landcover():
         temp = Path(temp)
         mock_data = FILE_DIR / "mock_data"
         subprocess.run(
-            "python3 landcover/train_model_landcover.py --output %s --name test "\
-            "--data_dir %s --training_states test --validation_states test "\
+            "python3 landcover/train_model_landcover.py --output %s --name test "
+            "--data_dir %s --training_states test --validation_states test "
             "--model_type unet --epochs 1 --loss jaccard --batch_size 1"
             % (str(temp), str(mock_data)),
             shell=True,

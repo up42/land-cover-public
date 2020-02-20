@@ -8,6 +8,7 @@ from keras.layers import UpSampling2D, BatchNormalization
 # ------------------
 # pylint: disable=invalid-name
 
+
 def conv_bn_relu(m, dim):
     x = Conv2D(dim, 3, activation=None, padding="same")(m)
     x = BatchNormalization()(x)
@@ -30,6 +31,7 @@ def dense_block(m, dim):
         x = Concatenate()([conv, x])
         outputs.append(conv)
     return Concatenate()(outputs)
+
 
 # pylint: disable=too-many-arguments
 def level_block_fixed_dims(m, dims, depth, acti, do, bn, mp, up, res, dense=False):

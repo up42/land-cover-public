@@ -1,5 +1,6 @@
 import os
 from landcover.eval_landcover_results import eval_landcover_results
+
 TRAIN_STATE_LIST = [
     "de_1m_2013",
     "ny_1m_2013",
