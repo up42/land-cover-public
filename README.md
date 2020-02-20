@@ -59,6 +59,10 @@ Run all tests:
 pytest --pylint
 ```
 
+Format code:
+```
+black
+```
 ## References
 
 Please cite the following papers if you use this work:
