@@ -17,7 +17,7 @@ def test_train_model_landcover_hr():
         temp = Path(temp)
         mock_data = FILE_DIR / "mock_data"
         subprocess.run(
-            "python3 train_model_landcover.py --output %s --name test --data_dir %s --training_states test --validation_states test --model_type unet --epochs 1 --loss jaccard --batch_size 1"
+            "python3 landcover/train_model_landcover.py --output %s --name test --data_dir %s --training_states test --validation_states test --model_type unet --epochs 1 --loss jaccard --batch_size 1"
             % (str(temp), str(mock_data)),
             shell=True,
             check=True,
@@ -35,7 +35,7 @@ def test_train_model_landcover_sr():
         temp = Path(temp)
         mock_data = FILE_DIR / "mock_data"
         subprocess.run(
-            "python3 train_model_landcover.py --output %s --name test --data_dir %s --training_states test --validation_states test --model_type unet --epochs 1 --loss superres --batch_size 1"
+            "python3 landcover/train_model_landcover.py --output %s --name test --data_dir %s --training_states test --validation_states test --model_type unet --epochs 1 --loss superres --batch_size 1"
             % (str(temp), str(mock_data)),
             shell=True,
             check=True,
@@ -55,7 +55,7 @@ def test_test_model_landcover_hr():
         model_weights = mock_data / "hr_final_model.h5"
         input_csv = mock_data / "test_extended-test_tiles.csv"
         subprocess.run(
-            "python3 test_model_landcover.py --input %s --output %s --model %s"
+            "python3 landcover/test_model_landcover.py --input %s --output %s --model %s"
             % (str(input_csv), str(temp), str(model_weights)),
             shell=True,
             check=True,
@@ -75,7 +75,7 @@ def test_test_model_landcover_sr():
         model_weights = mock_data / "sr_final_model.h5"
         input_csv = mock_data / "test_extended-test_tiles.csv"
         subprocess.run(
-            "python3 test_model_landcover.py --input %s --output %s --model %s --superres"
+            "python3 landcover/test_model_landcover.py --input %s --output %s --model %s --superres"
             % (str(input_csv), str(temp), str(model_weights)),
             shell=True,
             check=True,
@@ -93,7 +93,7 @@ def test_train_test_model_landcover():
         temp = Path(temp)
         mock_data = FILE_DIR / "mock_data"
         subprocess.run(
-            "python3 train_model_landcover.py --output %s --name test --data_dir %s --training_states test --validation_states test --model_type unet --epochs 1 --loss jaccard --batch_size 1"
+            "python3 landcover/train_model_landcover.py --output %s --name test --data_dir %s --training_states test --validation_states test --model_type unet --epochs 1 --loss jaccard --batch_size 1"
             % (str(temp), str(mock_data)),
             shell=True,
             check=True,
@@ -107,7 +107,7 @@ def test_train_test_model_landcover():
 
         input_csv = mock_data / "test_extended-test_tiles.csv"
         subprocess.run(
-            "python3 test_model_landcover.py --input %s --output %s --model %s"
+            "python3 landcover/test_model_landcover.py --input %s --output %s --model %s"
             % (str(input_csv), str(temp), str(model_weights)),
             shell=True,
             check=True,

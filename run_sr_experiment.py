@@ -77,7 +77,7 @@ for train_state in train_state_list:
             }
 
             command_train = (
-                "python train_model_landcover.py "
+                "python landcover/train_model_landcover.py "
                 "--output {output} "
                 "--name {exp_name} "
                 "--gpu {gpu} "
@@ -105,7 +105,7 @@ for train_state in train_state_list:
                 "log_name": "log_test_{}.txt".format(test_state),
             }
             command_test = (
-                "python test_model_landcover.py "
+                "python landcover/test_model_landcover.py "
                 "--input {test_csv} "
                 "--output {output}/{exp_name}/ "
                 "--model {output}/final_model.h5 "
