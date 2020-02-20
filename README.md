@@ -56,7 +56,7 @@ Only works with `sudo azcopy`.
 
 Run all tests:
 ```
-pytest
+pytest --pylint
 ```
 
 ## References
