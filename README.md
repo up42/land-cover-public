@@ -52,41 +52,6 @@ sudo cp ./azcopy_linux_amd64_*/azcopy /usr/bin/
 ```
 Only works with `sudo azcopy`.
 
-## Branching strategy
-
-Set additional remotes in your local repository:
-```
-git remote add upstream git@github.com:calebrob6/land-cover.git
-git remote add public git@github.com:up42/land-cover-public.git
-```
-
-Check if everything is set correctly:
-```
-git remote -v
-```
-Get latest versions with `git fetch` or `git pull`.
-
-Add local branches from remote master:
-```
-git branch upstream upstream/master
-git branch public public/master
-```
-**WARNING: Make sure to branch on top of public if you want to publish changes to upstream!**
-
-Rebase with latest version in remote (original repo into current branch):
-```
-git rebase upstream/master
-```
-
-Push branch to public repo:
-```
-git push public new_branch
-```
-
-Go to **compare across forks** in the [original repo](https://github.com/calebrob6/land-cover/compare) and make a PR from `land-cover-public:new_branch`.
-
-More on remotes [here](https://www.atlassian.com/git/tutorials/syncing).
-
 ## References
 
 Please cite the following papers if you use this work:
