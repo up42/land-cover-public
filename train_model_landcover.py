@@ -17,7 +17,7 @@ import os
 # TODO: This _really_ should be part of the normal argparse code.
 def parse_args(args, key):
     def is_int(s):
-        try: 
+        try:
             int(s)
             return True
         except ValueError:
@@ -62,7 +62,7 @@ def do_args(arg_list, name):
     parser.add_argument("--training_states", action="store", dest="training_states", nargs='+', type=str, help="States to use as training", required=True)
     parser.add_argument("--validation_states", action="store", dest="validation_states", nargs='+', type=str, help="States to use as validation", required=True)
     parser.add_argument("--superres_states", action="store", dest="superres_states", nargs='+', type=str, help="States to use only superres loss with", default="")
-    
+
     parser.add_argument("--color", action="store_true", help="Enable color augmentation", default=False)
 
     parser.add_argument("--model_type", action="store", dest="model_type", type=str, \
@@ -142,12 +142,17 @@ def main():
 
     #------------------------------
     # Step 2, run experiment
-    #------------------------------    
-    #training_steps_per_epoch = len(training_patches) // batch_size
-    #validation_steps_per_epoch = len(validation_patches) // batch_size
+    #------------------------------
+    #training_steps_per_epoch = 1#len(training_patches) // batch_size
+    #validation_steps_per_epoch = 1 #len(validation_patches) // batch_size
 
     training_steps_per_epoch = 300
     validation_steps_per_epoch = 39
+    # TODO: For testing - best if adaptable
+    if training_steps_per_epoch * batch_size > len(training_patches):
+        training_steps_per_epoch = 1
+        validation_steps_per_epoch = 1
+
 
     print("Number of training/validation steps per epoch: %d/%d" % (training_steps_per_epoch, validation_steps_per_epoch))
 
@@ -194,7 +199,7 @@ def main():
             #learning_rate_callback,
             model_checkpoint_callback
         ],
-        initial_epoch=0 
+        initial_epoch=0
     )
 
     #------------------------------
