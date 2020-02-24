@@ -24,6 +24,7 @@ import pandas as pd
 import rasterio
 
 import keras
+from keras.models import Model
 import keras.models
 import keras.metrics
 
@@ -73,7 +74,30 @@ def do_args(arg_list, name):
 
 
 class Test:
-    def __init__(self, input_fn, output_base, model_fn, save_probabilities, superres):
+    def __init__(
+        self,
+        input_fn: str,
+        output_base: str,
+        model_fn: str,
+        save_probabilities: bool,
+        superres: bool,
+    ):
+        """Constructor for Test object.
+
+        Parameters
+        ----------
+        input_fn : str
+            Path to csv filename that lists tiles.
+        output_base : str
+            Output directory to store predictions.
+        model_fn : str
+            Path to Keras .h5 model file to use.
+        save_probabilities : bool
+            Enable outputing grayscale probability maps for each class.
+        superres : bool
+            Is this a superres model?.
+
+        """
         self.input_fn = input_fn
         self.data_dir = os.path.dirname(input_fn)
         self.output_base = output_base
@@ -84,7 +108,34 @@ class Test:
         self.end_time = None
 
     @staticmethod
-    def run_model_on_tile(model, naip_tile, inpt_size, output_size, batch_size):
+    def run_model_on_tile(
+        model: Model,
+        naip_tile: np.array,
+        inpt_size: int,
+        output_size: int,
+        batch_size: int,
+    ):
+        """Run a model on imagery tile.
+
+        Parameters
+        ----------
+        model : Model
+            Keras Model object.
+        naip_tile : np.array
+            numpy array with imagery.
+        inpt_size : int
+            Height and width of input.
+        output_size : int
+            Number of channels of output - # classes.
+        batch_size : int
+            Batch size to predict with.
+
+        Returns
+        -------
+        np.array
+            Array with predictions. Each channel is probability of each class.
+
+        """
         down_weight_padding = 40
         height = naip_tile.shape[0]
         width = naip_tile.shape[1]
@@ -129,7 +180,15 @@ class Test:
 
         return output / counts[..., np.newaxis]
 
-    def load_tiles(self):
+    def load_tiles(self) -> list:
+        """Load list of tiles.
+
+        Returns
+        -------
+        list
+            List of lists of imagery, HR labels and LR labels file names.
+
+        """
         try:
             df = pd.read_csv(self.input_fn)
             fns = df[["naip-new_fn", "lc_fn", "nlcd_fn"]].values
@@ -139,7 +198,15 @@ class Test:
             print(e)
             return
 
-    def load_model(self):
+    def load_model(self) -> Model:
+        """Load model from file.
+
+        Returns
+        -------
+        Model
+            Loaded previously trained model.
+
+        """
         model = keras.models.load_model(
             self.model_fn,
             custom_objects={
@@ -161,6 +228,9 @@ class Test:
         return model
 
     def run_on_tiles(self):
+        """Run inference on list of tiles.
+
+        """
         print(
             "Starting %s at %s"
             % ("Model inference script", str(datetime.datetime.now()))
