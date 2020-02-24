@@ -11,32 +11,6 @@
 import sys
 import os
 
-# Here we look through the args to find which GPU we should use
-# We must do this before importing keras, which is super hacky
-# See: https://stackoverflow.com/questions/40690598/can-keras-with-tensorflow-backend-be-forced-to-use-cpu-or-gpu-at-will
-# TODO: This _really_ should be part of the normal argparse code.
-def parse_args(args, key):
-    def is_int(s):
-        try:
-            int(s)
-            return True
-        except ValueError:
-            return False
-
-    for i, arg in enumerate(args):
-        if arg == key:
-            if i + 1 < len(sys.argv):
-                if is_int(args[i + 1]):
-                    return args[i + 1]
-    return None
-
-
-os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-GPU_ID = parse_args(sys.argv, "--gpu")
-if GPU_ID is not None:  # if we passed `--gpu INT`, then set the flag, else don't
-    os.environ["CUDA_VISIBLE_DEVICES"] = GPU_ID
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-
 import shutil
 import time
 import argparse
@@ -51,7 +25,6 @@ import datagen
 
 from keras.optimizers import RMSprop, Adam
 from keras.callbacks import LearningRateScheduler, ModelCheckpoint
-
 
 def do_args(arg_list, name):
     parser = argparse.ArgumentParser(description=name)
@@ -80,14 +53,6 @@ def do_args(arg_list, name):
         type=str,
         help="Experiment name",
         required=True,
-    )
-    parser.add_argument(
-        "--gpu",
-        action="store",
-        dest="gpu",
-        type=int,
-        help="GPU id to use",
-        required=False,
     )
 
     parser.add_argument(
@@ -183,7 +148,6 @@ class Train:
         model_type,
         learning_rate,
         loss,
-        gpu,
         do_color=False,
         do_superres=False,
         input_shape=(240, 240, 4),
@@ -207,8 +171,6 @@ class Train:
         self.model_type = model_type
         self.learning_rate = learning_rate
         self.loss = loss
-
-        self.gpu = gpu
 
         self.do_color = do_color
         self.do_superres = loss == "superres"
