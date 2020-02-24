@@ -128,7 +128,10 @@ def do_args(arg_list, name):
     )
 
     parser.add_argument(
-        "--do_color", action="store_true", help="Enable color augmentation", default=False
+        "--do_color",
+        action="store_true",
+        help="Enable color augmentation",
+        default=False,
     )
 
     parser.add_argument(
@@ -181,8 +184,8 @@ class Train:
         learning_rate,
         loss,
         gpu,
-        do_color = False,
-        do_superres = False,
+        do_color=False,
+        do_superres=False,
         input_shape=(240, 240, 4),
         classes=5,
         verbose=2,
@@ -215,8 +218,8 @@ class Train:
         if not os.path.exists(self.log_dir):
             os.mkdir(self.log_dir)
 
-        self.training_steps_per_epoch=300
-        self.validation_steps_per_epoch=39
+        self.training_steps_per_epoch = 300
+        self.validation_steps_per_epoch = 39
 
         self.write_args()
 
@@ -229,9 +232,7 @@ class Train:
             f.write("%s,%s\n" % (str(k), str(v)))
         f.close()
 
-    def load_data(
-        self
-        ):
+    def load_data(self):
         training_patches = []
         for state in self.training_states:
             print("Adding training patches from %s" % (state))
@@ -292,11 +293,17 @@ class Train:
         if self.model_type == "unet":
             model = models.unet(self.input_shape, self.classes, optimizer, self.loss)
         elif self.model_type == "unet_large":
-            model = models.unet_large(self.input_shape, self.classes, optimizer, self.loss)
+            model = models.unet_large(
+                self.input_shape, self.classes, optimizer, self.loss
+            )
         elif self.model_type == "fcdensenet":
-            model = models.fcdensenet(self.input_shape, self.classes, optimizer, self.loss)
+            model = models.fcdensenet(
+                self.input_shape, self.classes, optimizer, self.loss
+            )
         elif self.model_type == "fcn_small":
-            model = models.fcn_small(self.input_shape, self.classes, optimizer, self.loss)
+            model = models.fcn_small(
+                self.input_shape, self.classes, optimizer, self.loss
+            )
         model.summary()
         return model
 
@@ -309,13 +316,10 @@ class Train:
         model.save_weights(os.path.join(self.log_dir, "final_model_weights.h5"))
 
     def run_experiment(
-        self,
-        max_queue_size=256,
-        workers=4,
+        self, learning_rate_flag=False, max_queue_size=256, workers=4,
     ):
         print("Starting %s at %s" % (self.name, str(datetime.datetime.now())))
         self.start_time = float(time.time())
-
 
         print(
             "Number of training/validation steps per epoch: %d/%d"
@@ -324,7 +328,9 @@ class Train:
 
         model = self.get_model()
 
-        validation_callback = utils.LandcoverResults(log_dir=self.log_dir, verbose=self.verbose)
+        validation_callback = utils.LandcoverResults(
+            log_dir=self.log_dir, verbose=self.verbose
+        )
         learning_rate_callback = LearningRateScheduler(
             utils.schedule_stepped, verbose=self.verbose
         )
@@ -339,6 +345,17 @@ class Train:
 
         training_generator, validation_generator = self.load_data()
 
+        if learning_rate_flag:
+            callbacks = [
+                validation_callback,
+                learning_rate_callback,
+                model_checkpoint_callback,
+            ]
+        else:
+            callbacks = [
+                validation_callback,
+                model_checkpoint_callback,
+            ]
         model.fit_generator(
             training_generator,
             steps_per_epoch=self.training_steps_per_epoch,
@@ -349,11 +366,7 @@ class Train:
             max_queue_size=max_queue_size,
             workers=workers,
             use_multiprocessing=True,
-            callbacks=[
-                validation_callback,
-                # learning_rate_callback,
-                model_checkpoint_callback,
-            ],
+            callbacks=callbacks,
             initial_epoch=0,
         )
 
