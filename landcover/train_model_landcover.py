@@ -128,7 +128,7 @@ def do_args(arg_list, name):
     )
 
     parser.add_argument(
-        "--color", action="store_true", help="Enable color augmentation", default=False
+        "--do_color", action="store_true", help="Enable color augmentation", default=False
     )
 
     parser.add_argument(
@@ -175,6 +175,14 @@ class Train:
         training_states,
         validation_states,
         superres_states,
+        epochs,
+        batch_size,
+        model_type,
+        learning_rate,
+        loss,
+        gpu,
+        do_color = False,
+        do_superres = False,
         input_shape=(240, 240, 4),
         classes=5,
         verbose=2,
@@ -191,27 +199,39 @@ class Train:
         self.input_shape = input_shape
         self.classes = classes
 
+        self.epochs = epochs
+        self.batch_size = batch_size
+        self.model_type = model_type
+        self.learning_rate = learning_rate
+        self.loss = loss
+
+        self.gpu = gpu
+
+        self.do_color = do_color
+        self.do_superres = loss == "superres"
+
         self.log_dir = os.path.join(output, name)
 
         if not os.path.exists(self.log_dir):
             os.mkdir(self.log_dir)
 
-        # TODO: Fix writing of arguments
+        self.training_steps_per_epoch=300
+        self.validation_steps_per_epoch=39
+
+        self.write_args()
+
+        self.start_time = None
+        self.end_time = None
+
+    def write_args(self):
         f = open(os.path.join(self.log_dir, "args.txt"), "w")
-        #for k, v in args.__dict__.items():
-        #    f.write("%s,%s\n" % (str(k), str(v)))
+        for k, v in self.__dict__.items():
+            f.write("%s,%s\n" % (str(k), str(v)))
         f.close()
 
-        print("Starting %s at %s" % (self.name, str(datetime.datetime.now())))
-        self.start_time = float(time.time())
-
     def load_data(
-        self,
-        batch_size,
-        training_steps_per_epoch,
-        validation_steps_per_epoch,
-        color,
-        do_superres    ):
+        self
+        ):
         training_patches = []
         for state in self.training_states:
             print("Adding training patches from %s" % (state))
@@ -233,45 +253,50 @@ class Train:
             % (len(training_patches), len(validation_patches))
         )
 
-        if do_superres:
+        if self.training_steps_per_epoch * self.batch_size > len(training_patches):
+            print("Number of train patches is insufficient. Assuming testing...")
+            self.training_steps_per_epoch = 1
+            self.validation_steps_per_epoch = 1
+
+        if self.do_superres:
             print("Using %d states in superres loss:" % (len(self.superres_states)))
             print(self.superres_states)
 
         training_generator = datagen.DataGenerator(
             training_patches,
-            batch_size,
-            training_steps_per_epoch,
+            self.batch_size,
+            self.training_steps_per_epoch,
             self.input_shape[0],
             self.input_shape[1],
             self.input_shape[2],
-            do_color_aug=color,
-            do_superres=do_superres,
+            do_color_aug=self.do_color,
+            do_superres=self.do_superres,
             superres_only_states=self.superres_states,
         )
         validation_generator = datagen.DataGenerator(
             validation_patches,
-            batch_size,
-            validation_steps_per_epoch,
+            self.batch_size,
+            self.validation_steps_per_epoch,
             self.input_shape[0],
             self.input_shape[1],
             self.input_shape[2],
-            do_color_aug=color,
-            do_superres=do_superres,
+            do_color_aug=self.do_color,
+            do_superres=self.do_superres,
             superres_only_states=[],
         )
         return training_generator, validation_generator
 
-    def get_model(self, model_type, learning_rate, loss):
+    def get_model(self):
         # Build the model
-        optimizer = RMSprop(learning_rate)
-        if model_type == "unet":
-            model = models.unet(self.input_shape, self.classes, optimizer, loss)
-        elif model_type == "unet_large":
-            model = models.unet_large(self.input_shape, self.classes, optimizer, loss)
-        elif model_type == "fcdensenet":
-            model = models.fcdensenet(self.input_shape, self.classes, optimizer, loss)
-        elif model_type == "fcn_small":
-            model = models.fcn_small(self.input_shape, self.classes, optimizer, loss)
+        optimizer = RMSprop(self.learning_rate)
+        if self.model_type == "unet":
+            model = models.unet(self.input_shape, self.classes, optimizer, self.loss)
+        elif self.model_type == "unet_large":
+            model = models.unet_large(self.input_shape, self.classes, optimizer, self.loss)
+        elif self.model_type == "fcdensenet":
+            model = models.fcdensenet(self.input_shape, self.classes, optimizer, self.loss)
+        elif self.model_type == "fcn_small":
+            model = models.fcn_small(self.input_shape, self.classes, optimizer, self.loss)
         model.summary()
         return model
 
@@ -283,32 +308,21 @@ class Train:
             json_file.write(model_json)
         model.save_weights(os.path.join(self.log_dir, "final_model_weights.h5"))
 
-        print("Finished in %0.4f seconds" % (time.time() - self.start_time))
-
     def run_experiment(
         self,
-        epochs,
-        model_type,
-        batch_size,
-        learning_rate,
-        loss,
-        color=False,
-        training_steps_per_epoch=1,
-        validation_steps_per_epoch=1,
         max_queue_size=256,
         workers=4,
     ):
-        do_superres = loss == "superres"
-        #if training_steps_per_epoch * batch_size > len(training_patches):
-        #    training_steps_per_epoch = 300
-        #    validation_steps_per_epoch = 39
+        print("Starting %s at %s" % (self.name, str(datetime.datetime.now())))
+        self.start_time = float(time.time())
+
 
         print(
             "Number of training/validation steps per epoch: %d/%d"
-            % (training_steps_per_epoch, validation_steps_per_epoch)
+            % (self.training_steps_per_epoch, self.validation_steps_per_epoch)
         )
 
-        model = self.get_model(model_type, learning_rate, loss)
+        model = self.get_model()
 
         validation_callback = utils.LandcoverResults(log_dir=self.log_dir, verbose=self.verbose)
         learning_rate_callback = LearningRateScheduler(
@@ -323,15 +337,15 @@ class Train:
             period=20,
         )
 
-        training_generator, validation_generator = self.load_data(batch_size,training_steps_per_epoch,validation_steps_per_epoch, color, do_superres)
+        training_generator, validation_generator = self.load_data()
 
         model.fit_generator(
             training_generator,
-            steps_per_epoch=training_steps_per_epoch,
-            epochs=epochs,
+            steps_per_epoch=self.training_steps_per_epoch,
+            epochs=self.epochs,
             verbose=self.verbose,
             validation_data=validation_generator,
-            validation_steps=validation_steps_per_epoch,
+            validation_steps=self.validation_steps_per_epoch,
             max_queue_size=max_queue_size,
             workers=workers,
             use_multiprocessing=True,
@@ -345,24 +359,15 @@ class Train:
 
         self.save_model(model)
 
+        self.end_time = float(time.time())
+        print("Finished in %0.4f seconds" % (self.end_time - self.start_time))
+
 
 def main():
     prog_name = sys.argv[0]
     args = do_args(sys.argv[1:], prog_name)
     vars_args = vars(args)
-    args_train = dict((k, vars_args.get(k, None)) for k in ("output",
-    "name",
-    "data_dir",
-    "training_states",
-    "validation_states",
-    "superres_states",))
-    args_experiment = dict((k, vars_args.get(k, None)) for k in ("epochs",
-    "model_type",
-    "batch_size",
-    "learning_rate",
-    "loss",
-    "color"))
-    Train(**args_train).run_experiment(**args_experiment)
+    Train(**vars_args).run_experiment()
 
 
 if __name__ == "__main__":
