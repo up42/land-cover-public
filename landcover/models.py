@@ -11,6 +11,7 @@ from utils import load_nlcd_stats
 
 MIRRORED_STRATEGY = tf.distribute.MirroredStrategy()
 
+
 def jaccard_loss(y_true, y_pred, smooth=0.001, num_classes=7):
     intersection = y_true * y_pred
     sum_ = y_true + y_pred

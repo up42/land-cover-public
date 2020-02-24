@@ -10,6 +10,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 FILE_DIR = Path(os.path.dirname(os.path.realpath(__file__)))
 
+
 def test_test_model_landcover_hr():
     with tempfile.TemporaryDirectory() as temp:
         temp = Path(temp)

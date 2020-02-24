@@ -73,14 +73,7 @@ def do_args(arg_list, name):
 
 
 class Test:
-    def __init__(
-        self,
-        input_fn,
-        output_base,
-        model_fn,
-        save_probabilities,
-        superres
-    ):
+    def __init__(self, input_fn, output_base, model_fn, save_probabilities, superres):
         self.input_fn = input_fn
         self.data_dir = os.path.dirname(input_fn)
         self.output_base = output_base
@@ -168,7 +161,10 @@ class Test:
         return model
 
     def run_on_tiles(self):
-        print("Starting %s at %s" % ("Model inference script", str(datetime.datetime.now())))
+        print(
+            "Starting %s at %s"
+            % ("Model inference script", str(datetime.datetime.now()))
+        )
         self.start_time = float(time.time())
 
         fns = self.load_tiles()
@@ -189,7 +185,11 @@ class Test:
             naip_fid.close()
 
             output = self.run_model_on_tile(
-                model, naip_tile, model.input_shape[1:][0], model.output_shape[1:][2], 16
+                model,
+                naip_tile,
+                model.input_shape[1:][0],
+                model.output_shape[1:][2],
+                16,
             )
             # output[:,:,4] += output[:,:,5]
             # output[:,:,4] += output[:,:,6]
@@ -241,7 +241,10 @@ class Test:
             print("Finished iteration in %0.4f seconds" % (time.time() - tic))
 
         self.end_time = float(time.time())
-        print("Finished %s in %0.4f seconds" % ("Model inference script", self.end_time - self.start_time))
+        print(
+            "Finished %s in %0.4f seconds"
+            % ("Model inference script", self.end_time - self.start_time)
+        )
 
 
 def main():
@@ -249,6 +252,7 @@ def main():
     args = do_args(sys.argv[1:], program_name)
     vars_args = vars(args)
     Test(**vars_args).run_on_tiles()
+
 
 if __name__ == "__main__":
     main()
