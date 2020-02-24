@@ -15,6 +15,7 @@ import shutil
 import time
 import argparse
 import datetime
+from typing import Tuple
 
 import numpy as np
 import pandas as pd
@@ -23,8 +24,10 @@ import utils
 import models
 import datagen
 
+from keras.models import Model
 from keras.optimizers import RMSprop, Adam
 from keras.callbacks import LearningRateScheduler, ModelCheckpoint
+
 
 def do_args(arg_list, name):
     parser = argparse.ArgumentParser(description=name)
@@ -128,32 +131,75 @@ def do_args(arg_list, name):
     )
 
     parser.add_argument(
-        "--batch_size", action="store", type=eval, help="Batch size", default="128"
+        "--batch_size", action="store", type=int, help="Batch size", default=128
     )
 
     return parser.parse_args(arg_list)
 
 
 class Train:
+    """
+    Wrapper class for all training parameters and methods.
+    """
+
     def __init__(
         self,
-        output,
-        name,
-        data_dir,
-        training_states,
-        validation_states,
-        superres_states,
-        epochs,
-        batch_size,
-        model_type,
-        learning_rate,
-        loss,
-        do_color=False,
-        do_superres=False,
-        input_shape=(240, 240, 4),
-        classes=5,
-        verbose=2,
+        output: str,
+        name: str,
+        data_dir: str,
+        training_states: list,
+        validation_states: list,
+        superres_states: list,
+        model_type: str,
+        loss: str,
+        epochs: int = 100,
+        batch_size: int = 128,
+        learning_rate: float = 0.001,
+        do_color: bool = False,
+        do_superres: bool = False,
+        input_shape: tuple = (240, 240, 4),
+        classes: int = 5,
+        verbose: int = 2,
     ):
+        """Constructor for Train object.
+
+        Parameters
+        ----------
+        output : str
+            Directory to place all output files of training runs.
+        name : str
+            Name of experiment or training run (should be unique).
+        data_dir : str
+            Path to data directory containing the CSV file pointing to train
+            and validation patches.
+        training_states : list
+            States (datasets) to use as training.
+        validation_states : list
+            States (datasets) to use as validation.
+        superres_states : list
+            States (datasets) to use only superres loss with.
+        epochs : int
+            Number of epochs for training.
+        batch_size : int
+            Batch size for training.
+        model_type : str
+            Model architecture to use - one of ["unet", "unet_large",
+            "fcdensenet", "fcn_small"].
+        learning_rate : float
+            Learning rate for model training.
+        loss : str
+            Loss function to use - one of ["crossentropy", "jaccard", "superres"].
+        do_color : bool
+            Use color augmentation method.
+        do_superres : bool
+            Use superresolution augmentation method.
+        input_shape : tuple
+            Shape of input data (w, h, c).
+        classes : int
+            Number of target classes (number of classes in training data).
+        verbose : int
+            Level of verbosity of fit method (passed to keras) 0 to 2 (silent to verbose).
+        """
         self.verbose = verbose
         self.output = output
         self.name = name
@@ -189,12 +235,22 @@ class Train:
         self.end_time = None
 
     def write_args(self):
+        """Write arguments into file.
+
+        """
         f = open(os.path.join(self.log_dir, "args.txt"), "w")
         for k, v in self.__dict__.items():
             f.write("%s,%s\n" % (str(k), str(v)))
         f.close()
 
-    def load_data(self):
+    def load_data(self) -> Tuple[datagen.DataGenerator, datagen.DataGenerator]:
+        """Load patches from csv file for training and validation.
+
+        Returns
+        -------
+        Tuple[datagen.DataGenerator, datagen.DataGenerator]
+            Generator of data for training [0] and validation [1]
+        """
         training_patches = []
         for state in self.training_states:
             print("Adding training patches from %s" % (state))
@@ -249,7 +305,15 @@ class Train:
         )
         return training_generator, validation_generator
 
-    def get_model(self):
+    def get_model(self) -> Model:
+        """Get selected model.
+
+        Returns
+        -------
+        Model
+            Keras model object, compiled.
+
+        """
         # Build the model
         optimizer = RMSprop(self.learning_rate)
         if self.model_type == "unet":
@@ -269,7 +333,15 @@ class Train:
         model.summary()
         return model
 
-    def save_model(self, model):
+    def save_model(self, model: Model):
+        """Save Keras trained model and weights into files.
+
+        Parameters
+        ----------
+        model : Model
+            Keras model object, trained.
+
+        """
         model.save(os.path.join(self.log_dir, "final_model.h5"))
 
         model_json = model.to_json()
@@ -278,8 +350,22 @@ class Train:
         model.save_weights(os.path.join(self.log_dir, "final_model_weights.h5"))
 
     def run_experiment(
-        self, learning_rate_flag=False, max_queue_size=256, workers=4,
+        self,
+        learning_rate_flag: bool = False,
+        max_queue_size: int = 256,
+        workers: int = 4,
     ):
+        """Run training job.
+
+        Parameters
+        ----------
+        learning_rate_flag : bool
+            Set to true to use learning rate callback.
+        max_queue_size : int
+            Maximum queue size for Keras fit_generator.
+        workers : int
+            Number of workers for Keras fit_generator.
+        """
         print("Starting %s at %s" % (self.name, str(datetime.datetime.now())))
         self.start_time = float(time.time())
 
