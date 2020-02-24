@@ -23,12 +23,10 @@ import pandas as pd
 
 import rasterio
 
-import tensorflow as tf
 import keras
 import keras.models
 import keras.metrics
 
-MIRRORED_STRATEGY = tf.distribute.MirroredStrategy()
 
 def do_args(arg_list, name):
     parser = argparse.ArgumentParser(description=name)
@@ -149,29 +147,28 @@ class Test:
             return
 
     def load_model(self):
-        with MIRRORED_STRATEGY.scope():
-            model = keras.models.load_model(
-                model_fn,
-                custom_objects={
-                    "jaccard_loss": keras.metrics.mean_squared_error,
-                    "loss": keras.metrics.mean_squared_error,
-                },
-            )
+        model = keras.models.load_model(
+            self.model_fn,
+            custom_objects={
+                "jaccard_loss": keras.metrics.mean_squared_error,
+                "loss": keras.metrics.mean_squared_error,
+            },
+        )
 
-            if superres:
-                model = keras.models.Model(input=model.inputs, outputs=[model.outputs[0]])
-                model.compile("sgd", "mse")
+        if self.superres:
+            model = keras.models.Model(input=model.inputs, outputs=[model.outputs[0]])
+            model.compile("sgd", "mse")
 
-            output_shape = model.output_shape[1:]
-            input_shape = model.input_shape[1:]
-            model_input_size = input_shape[0]
-            assert (
-                len(model.outputs) == 1
-            ), "The loaded model has multiple outputs. You need to specify --superres if this model was trained with the superres loss."
-            return model
+        output_shape = model.output_shape[1:]
+        input_shape = model.input_shape[1:]
+        model_input_size = input_shape[0]
+        assert (
+            len(model.outputs) == 1
+        ), "The loaded model has multiple outputs. You need to specify --superres if this model was trained with the superres loss."
+        return model
 
     def run_on_tiles(self):
-        print("Starting %s at %s" % (program_name, str(datetime.datetime.now())))
+        print("Starting %s at %s" % ("Model inference script", str(datetime.datetime.now())))
         self.start_time = float(time.time())
 
         fns = self.load_tiles()
@@ -191,8 +188,8 @@ class Test:
             naip_tile = np.rollaxis(naip_tile, 0, 3)
             naip_fid.close()
 
-            output = run_model_on_tile(
-                model, naip_tile, model.input_shape[1:], model.output_shape[1:][2], 16
+            output = self.run_model_on_tile(
+                model, naip_tile, model.input_shape[1:][0], model.output_shape[1:][2], 16
             )
             # output[:,:,4] += output[:,:,5]
             # output[:,:,4] += output[:,:,6]
@@ -244,14 +241,13 @@ class Test:
             print("Finished iteration in %0.4f seconds" % (time.time() - tic))
 
         self.end_time = float(time.time())
-        print("Finished %s in %0.4f seconds" % (program_name, self.end_time - self.start_time))
+        print("Finished %s in %0.4f seconds" % ("Model inference script", self.end_time - self.start_time))
 
 
 def main():
     program_name = "Model inference script"
     args = do_args(sys.argv[1:], program_name)
     vars_args = vars(args)
-    print(vars_args)
     Test(**vars_args).run_on_tiles()
 
 if __name__ == "__main__":
