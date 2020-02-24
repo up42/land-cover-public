@@ -12,32 +12,6 @@
 import sys
 import os
 
-# Here we look through the args to find which GPU we should use
-# We must do this before importing keras, which is super hacky
-# See: https://stackoverflow.com/questions/40690598/can-keras-with-tensorflow-backend-be-forced-to-use-cpu-or-gpu-at-will
-# TODO: This _really_ should be part of the normal argparse code.
-def parse_args(args, key):
-    def is_int(s):
-        try:
-            int(s)
-            return True
-        except ValueError:
-            return False
-
-    for i, arg in enumerate(args):
-        if arg == key:
-            if i + 1 < len(sys.argv):
-                if is_int(args[i + 1]):
-                    return args[i + 1]
-    return None
-
-
-os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-GPU_ID = parse_args(sys.argv, "--gpu")
-if GPU_ID is not None:  # if we passed `--gpu INT`, then set the flag, else don't
-    os.environ["CUDA_VISIBLE_DEVICES"] = GPU_ID
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-
 import time
 import subprocess
 import datetime
@@ -49,10 +23,12 @@ import pandas as pd
 
 import rasterio
 
+import tensorflow as tf
 import keras
 import keras.models
 import keras.metrics
 
+MIRRORED_STRATEGY = tf.distribute.MirroredStrategy()
 
 def do_args(arg_list, name):
     parser = argparse.ArgumentParser(description=name)
@@ -86,14 +62,6 @@ def do_args(arg_list, name):
         action="store_true",
         default=False,
         help="Enable outputing grayscale probability maps for each class",
-    )
-    parser.add_argument(
-        "--gpu",
-        action="store",
-        dest="gpu",
-        type=int,
-        required=False,
-        help="GPU id to use",
     )
     parser.add_argument(
         "--superres",
@@ -181,25 +149,26 @@ class Test:
             return
 
     def load_model(self):
-        model = keras.models.load_model(
-            model_fn,
-            custom_objects={
-                "jaccard_loss": keras.metrics.mean_squared_error,
-                "loss": keras.metrics.mean_squared_error,
-            },
-        )
+        with MIRRORED_STRATEGY.scope():
+            model = keras.models.load_model(
+                model_fn,
+                custom_objects={
+                    "jaccard_loss": keras.metrics.mean_squared_error,
+                    "loss": keras.metrics.mean_squared_error,
+                },
+            )
 
-        if superres:
-            model = keras.models.Model(input=model.inputs, outputs=[model.outputs[0]])
-            model.compile("sgd", "mse")
+            if superres:
+                model = keras.models.Model(input=model.inputs, outputs=[model.outputs[0]])
+                model.compile("sgd", "mse")
 
-        output_shape = model.output_shape[1:]
-        input_shape = model.input_shape[1:]
-        model_input_size = input_shape[0]
-        assert (
-            len(model.outputs) == 1
-        ), "The loaded model has multiple outputs. You need to specify --superres if this model was trained with the superres loss."
-        return model
+            output_shape = model.output_shape[1:]
+            input_shape = model.input_shape[1:]
+            model_input_size = input_shape[0]
+            assert (
+                len(model.outputs) == 1
+            ), "The loaded model has multiple outputs. You need to specify --superres if this model was trained with the superres loss."
+            return model
 
     def run_on_tiles(self):
         print("Starting %s at %s" % (program_name, str(datetime.datetime.now())))
