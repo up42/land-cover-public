@@ -29,7 +29,9 @@ import keras.models
 import keras.metrics
 
 from helpers import get_logger
+
 logger = get_logger(__name__)
+
 
 def do_args(arg_list, name):
     parser = argparse.ArgumentParser(description=name)

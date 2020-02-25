@@ -29,6 +29,7 @@ from keras.optimizers import RMSprop, Adam
 from keras.callbacks import LearningRateScheduler, ModelCheckpoint
 
 from helpers import get_logger
+
 logger = get_logger(__name__)
 
 
@@ -281,7 +282,9 @@ class Train:
             self.validation_steps_per_epoch = 1
 
         if self.do_superres:
-            logger.info("Using %d states in superres loss:" % (len(self.superres_states)))
+            logger.info(
+                "Using %d states in superres loss:" % (len(self.superres_states))
+            )
             logger.info(self.superres_states)
 
         training_generator = datagen.DataGenerator(
