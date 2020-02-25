@@ -11,7 +11,6 @@ import sys
 import os
 import datetime
 import argparse
-import logging
 
 # Library imports
 import numpy as np
@@ -25,7 +24,8 @@ from shapely.geometry import mapping
 from collections import defaultdict
 
 # Setup
-logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+from helpers import get_logger
+logger = get_logger(__name__)
 
 # ---------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------
@@ -82,14 +82,14 @@ def main():
     input_fn = args.input_fn
     data_dir = os.path.dirname(input_fn)
 
-    logging.info("Starting %s at %s" % (program_name, str(datetime.datetime.now())))
+    logger.info("Starting %s at %s" % (program_name, str(datetime.datetime.now())))
 
     try:
         df = pd.read_csv(input_fn)
         fns = df[["naip-new_fn", "lc_fn", "nlcd_fn"]].values
     except Exception as e:
-        logging.error("Could not load the input file")
-        logging.error(e)
+        logger.error("Could not load the input file")
+        logger.error(e)
         return
 
     cm = np.zeros((4, 4), dtype=np.float32)
@@ -141,7 +141,7 @@ def main():
         else:
             accuracy = -1
 
-        logging.info(
+        logger.info(
             "Accuracy %f %s\t%d/%d %f"
             % (accuracy, lc_fn, i + 1, len(fns), acc_sum / acc_num)
         )
