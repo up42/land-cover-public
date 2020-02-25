@@ -28,6 +28,8 @@ from keras.models import Model
 import keras.models
 import keras.metrics
 
+from helpers import get_logger
+logger = get_logger(__name__)
 
 def do_args(arg_list, name):
     parser = argparse.ArgumentParser(description=name)
@@ -194,8 +196,8 @@ class Test:
             fns = df[["naip-new_fn", "lc_fn", "nlcd_fn"]].values
             return fns
         except Exception as e:
-            print("Could not load the input file")
-            print(e)
+            logger.error("Could not load the input file")
+            logger.error(e)
             return
 
     def load_model(self) -> Model:
@@ -231,7 +233,7 @@ class Test:
         """Run inference on list of tiles.
 
         """
-        print(
+        logger.info(
             "Starting %s at %s"
             % ("Model inference script", str(datetime.datetime.now()))
         )
@@ -246,7 +248,7 @@ class Test:
             lc_fn = os.path.join(self.data_dir, fns[i][1])
             nlcd_fn = os.path.join(self.data_dir, fns[i][2])
 
-            print("Running model on %s\t%d/%d" % (naip_fn, i + 1, len(fns)))
+            logger.info("Running model on %s\t%d/%d" % (naip_fn, i + 1, len(fns)))
 
             naip_fid = rasterio.open(naip_fn, "r")
             naip_profile = naip_fid.meta.copy()
@@ -308,10 +310,10 @@ class Test:
             f.write(output_classes, 1)
             f.close()
 
-            print("Finished iteration in %0.4f seconds" % (time.time() - tic))
+            logger.info("Finished iteration in %0.4f seconds" % (time.time() - tic))
 
         self.end_time = float(time.time())
-        print(
+        logger.info(
             "Finished %s in %0.4f seconds"
             % ("Model inference script", self.end_time - self.start_time)
         )

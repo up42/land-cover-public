@@ -28,6 +28,9 @@ from keras.models import Model
 from keras.optimizers import RMSprop, Adam
 from keras.callbacks import LearningRateScheduler, ModelCheckpoint
 
+from helpers import get_logger
+logger = get_logger(__name__)
+
 
 def do_args(arg_list, name):
     parser = argparse.ArgumentParser(description=name)
@@ -253,7 +256,7 @@ class Train:
         """
         training_patches = []
         for state in self.training_states:
-            print("Adding training patches from %s" % (state))
+            logger.info("Adding training patches from %s" % (state))
             fn = os.path.join(self.data_dir, "%s_extended-train_patches.csv" % (state))
             df = pd.read_csv(fn)
             for fn in df["patch_fn"].values:
@@ -261,25 +264,25 @@ class Train:
 
         validation_patches = []
         for state in self.validation_states:
-            print("Adding validation patches from %s" % (state))
+            logger.info("Adding validation patches from %s" % (state))
             fn = os.path.join(self.data_dir, "%s_extended-val_patches.csv" % (state))
             df = pd.read_csv(fn)
             for fn in df["patch_fn"].values:
                 validation_patches.append((os.path.join(self.data_dir, fn), state))
 
-        print(
+        logger.info(
             "Loaded %d training patches and %d validation patches"
             % (len(training_patches), len(validation_patches))
         )
 
         if self.training_steps_per_epoch * self.batch_size > len(training_patches):
-            print("Number of train patches is insufficient. Assuming testing...")
+            logger.info("Number of train patches is insufficient. Assuming testing...")
             self.training_steps_per_epoch = 1
             self.validation_steps_per_epoch = 1
 
         if self.do_superres:
-            print("Using %d states in superres loss:" % (len(self.superres_states)))
-            print(self.superres_states)
+            logger.info("Using %d states in superres loss:" % (len(self.superres_states)))
+            logger.info(self.superres_states)
 
         training_generator = datagen.DataGenerator(
             training_patches,
@@ -366,10 +369,10 @@ class Train:
         workers : int
             Number of workers for Keras fit_generator.
         """
-        print("Starting %s at %s" % (self.name, str(datetime.datetime.now())))
+        logger.info("Starting %s at %s" % (self.name, str(datetime.datetime.now())))
         self.start_time = float(time.time())
 
-        print(
+        logger.info(
             "Number of training/validation steps per epoch: %d/%d"
             % (self.training_steps_per_epoch, self.validation_steps_per_epoch)
         )
@@ -421,7 +424,7 @@ class Train:
         self.save_model(model)
 
         self.end_time = float(time.time())
-        print("Finished in %0.4f seconds" % (self.end_time - self.start_time))
+        logger.info("Finished in %0.4f seconds" % (self.end_time - self.start_time))
 
 
 def main():
