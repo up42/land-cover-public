@@ -5,8 +5,14 @@ from pathlib import Path
 import tempfile
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+sys.path.insert(
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../landcover/"))
+)
+# pylint: disable=wrong-import-position
+from landcover.compute_accuracy import compute_accuracy
 
 FILE_DIR = Path(os.path.dirname(os.path.realpath(__file__)))
+
 
 def test_compute_accuracy(capsys):
     with tempfile.TemporaryDirectory() as temp:
@@ -24,3 +30,12 @@ def test_compute_accuracy(capsys):
         # Makes sure something is printed out
         captured = capsys.readouterr()
         assert captured
+
+
+def test_function_compute_accuracy():
+    mock_data = FILE_DIR / "mock_data"
+    input_csv = mock_data / "test_extended-test_tiles.csv"
+    acc, cm, cm_dev = compute_accuracy(mock_data, input_csv)
+    assert round(acc, 2) == 0.04
+    assert cm.shape == (4, 4)
+    assert cm_dev.shape == (4, 4)

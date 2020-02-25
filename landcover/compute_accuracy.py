@@ -25,6 +25,7 @@ from collections import defaultdict
 
 # Setup
 from helpers import get_logger
+
 logger = get_logger(__name__)
 
 # ---------------------------------------------------------------------------------------------------
@@ -74,15 +75,13 @@ def get_confusion_matrix(lc_vec, pred_vec):
     return cnf
 
 
-def main():
-    program_name = "Accuracy computing script"
-    args = do_args(sys.argv[1:], program_name)
-
-    pred_dir = args.output
-    input_fn = args.input_fn
+def compute_accuracy(pred_dir, input_fn):
     data_dir = os.path.dirname(input_fn)
 
-    logger.info("Starting %s at %s" % (program_name, str(datetime.datetime.now())))
+    logger.info(
+        "Starting %s at %s"
+        % ("Accuracy computing script", str(datetime.datetime.now()))
+    )
 
     try:
         df = pd.read_csv(input_fn)
@@ -145,10 +144,15 @@ def main():
             "Accuracy %f %s\t%d/%d %f"
             % (accuracy, lc_fn, i + 1, len(fns), acc_sum / acc_num)
         )
-        print(np.round(cm / np.sum(cm) * 1000))
+    return acc_sum / acc_num, cm, cm_dev
 
+
+def main():
+    program_name = "Accuracy computing script"
+    args = do_args(sys.argv[1:], program_name)
+    acc, cm, cm_dev = compute_accuracy(args.output, args.input_fn)
     print("-----------------------------")
-    print(acc_sum / acc_num)
+    print(acc)
     print(cm)
     print(cm_dev)
 
