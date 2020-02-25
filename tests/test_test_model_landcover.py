@@ -18,7 +18,7 @@ def test_test_model_landcover_hr():
         model_weights = mock_data / "hr_final_model.h5"
         input_csv = mock_data / "test_extended-test_tiles.csv"
         subprocess.run(
-            "python3 landcover/test_model_landcover.py --input %s --output %s --model %s"
+            "python3 landcover/testing_model_landcover.py --input %s --output %s --model %s"
             % (str(input_csv), str(temp), str(model_weights)),
             shell=True,
             check=True,
@@ -38,7 +38,7 @@ def test_test_model_landcover_sr():
         model_weights = mock_data / "sr_final_model.h5"
         input_csv = mock_data / "test_extended-test_tiles.csv"
         subprocess.run(
-            "python3 landcover/test_model_landcover.py --input %s --output %s --model %s --superres"
+            "python3 landcover/testing_model_landcover.py --input %s --output %s --model %s --superres"
             % (str(input_csv), str(temp), str(model_weights)),
             shell=True,
             check=True,
