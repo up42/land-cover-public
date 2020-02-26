@@ -1,12 +1,16 @@
 import argparse
 from pathlib import Path
+import time
+import datetime
 import sys
+import numpy as np
+
 # pylint: disable=wrong-import-position
 sys.path.append("landcover")
 from train_model_landcover import Train
 from testing_model_landcover import Test
 from compute_accuracy import compute_accuracy
-from eval_landcover_results import eval_landcover_results
+from eval_landcover_results import accuracy_jaccard_np
 
 from helpers import get_logger
 
@@ -51,10 +55,7 @@ def do_args():
         help="States to use only superres loss with",
     )
     parser.add_argument(
-        "--test-states",
-        nargs="+",
-        type=str,
-        help="States to test model with",
+        "--test-states", nargs="+", type=str, help="States to test model with",
     )
     parser.add_argument(
         "--do-color",
@@ -88,6 +89,8 @@ def do_args():
 def main():
     # Read arguments
     args = do_args()
+    start_time = float(time.time())
+    logger.info("Starting at %s", str(datetime.datetime.now()))
     logger.info(args)
 
     # Ensure folders are there and no overwrite
@@ -114,6 +117,8 @@ def main():
     )
     train.run_experiment()
 
+    cm = np.zeros((4, 4), dtype=np.float32)
+    cm_dev = np.zeros((4, 4), dtype=np.float32)
     for test_state in args.test_states:
         # Run testing
         ## Get test file name
@@ -137,9 +142,27 @@ def main():
         test.run_on_tiles()
 
         # Run accuracy
-        compute_accuracy(pred_dir=prediction_dir, input_fn=input_fn)
+        acc, cm_s, cm_dev_s = compute_accuracy(
+            pred_dir=prediction_dir, input_fn=input_fn
+        )
+        logger.info("Overall accuracy for %s: %.4f", test_state, acc)
 
-        # Run eval
+        # Confusion matrices
+        cm += cm_s
+        cm_dev += cm_dev_s
+
+    # Run eval
+    logger.info("-----------------------------")
+    logger.info("OVERALL METRICS")
+    logger.info("-----------------------------")
+    logger.info("Accuracy and jaccard of all pixels")
+    accuracy_jaccard_np(cm)
+    logger.info("Accuracy and jaccard of pixels with developed NLCD classes")
+    accuracy_jaccard_np(cm_dev)
+
+    logger.info("Finished at %s", str(datetime.datetime.now()))
+    logger.info("Finished in %0.4f seconds", float(time.time()) - start_time)
+
 
 
 if __name__ == "__main__":
