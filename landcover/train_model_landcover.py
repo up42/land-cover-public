@@ -164,6 +164,11 @@ class Train:
         input_shape: tuple = (240, 240, 4),
         classes: int = 5,
         verbose: int = 2,
+        lr_num_classes: int =22,
+        hr_labels_index: int=8,
+        lr_labels_index: int=9,
+        hr_label_key: str="data/cheaseapeake_to_hr_labels.txt",
+        lr_label_key: str="data/nlcd_to_lr_labels.txt",
     ):
         """Constructor for Train object.
 
@@ -233,6 +238,12 @@ class Train:
         self.training_steps_per_epoch = 300
         self.validation_steps_per_epoch = 39
 
+        self.lr_num_classes = lr_num_classes
+        self.hr_labels_index = hr_labels_index
+        self.lr_labels_index = lr_labels_index
+        self.hr_label_key = hr_label_key
+        self.lr_label_key = lr_label_key
+
         self.write_args()
 
         self.start_time = None
@@ -294,6 +305,12 @@ class Train:
             self.input_shape[0],
             self.input_shape[1],
             self.input_shape[2],
+            num_classes=self.classes,
+            lr_num_classes=self.lr_num_classes,
+            hr_labels_index=self.hr_labels_index,
+            lr_labels_index=self.lr_labels_index,
+            hr_label_key=self.hr_label_key,
+            lr_label_key=self.lr_label_key,
             do_color_aug=self.do_color,
             do_superres=self.do_superres,
             superres_only_states=self.superres_states,
@@ -305,6 +322,12 @@ class Train:
             self.input_shape[0],
             self.input_shape[1],
             self.input_shape[2],
+            num_classes=self.classes,
+            lr_num_classes=self.lr_num_classes,
+            hr_labels_index=self.hr_labels_index,
+            lr_labels_index=self.lr_labels_index,
+            hr_label_key=self.hr_label_key,
+            lr_label_key=self.lr_label_key,
             do_color_aug=self.do_color,
             do_superres=self.do_superres,
             superres_only_states=[],
