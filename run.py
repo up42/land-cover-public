@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 import sys
-
+# pylint: disable=wrong-import-position
 sys.path.append("landcover")
 from train_model_landcover import Train
 from testing_model_landcover import Test
@@ -49,14 +49,14 @@ def do_args():
         nargs="+",
         type=str,
         help="States to use only superres loss with",
-        default="",
+        default=[],
     ),
     parser.add_argument(
         "--test-states",
         nargs="+",
         type=str,
         help="States to test model with",
-        default="",
+        default=[],
     ),
     parser.add_argument(
         "--do-color",

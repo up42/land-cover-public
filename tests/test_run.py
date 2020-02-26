@@ -1,10 +1,7 @@
-import sys
 import os
 import subprocess
 from pathlib import Path
 import tempfile
-import rasterio as rio
-import numpy as np
 
 FILE_DIR = Path(os.path.dirname(os.path.realpath(__file__)))
 
