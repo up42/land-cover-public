@@ -49,15 +49,13 @@ def do_args():
         nargs="+",
         type=str,
         help="States to use only superres loss with",
-        default=[],
-    ),
+    )
     parser.add_argument(
         "--test-states",
         nargs="+",
         type=str,
         help="States to test model with",
-        default=[],
-    ),
+    )
     parser.add_argument(
         "--do-color",
         action="store_true",
