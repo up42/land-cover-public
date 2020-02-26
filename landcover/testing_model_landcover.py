@@ -74,10 +74,7 @@ def do_args(arg_list, name):
         help="Is this a superres model",
     )
     parser.add_argument(
-        "--classes",
-        dest="classes",
-        default=5,
-        help="Number of target classes",
+        "--classes", dest="classes", default=5, help="Number of target classes",
     )
 
     return parser.parse_args(arg_list)
@@ -91,7 +88,7 @@ class Test:
         model_fn: str,
         save_probabilities: bool,
         superres: bool,
-        classes: int = 5
+        classes: int = 5,
     ):
         """Constructor for Test object.
 
@@ -273,7 +270,7 @@ class Test:
                 model.output_shape[1:][2],
                 16,
             )
-            output = output[:, :, :self.classes]
+            output = output[:, :, : self.classes]
 
             # ----------------------------------------------------------------
             # Write out each softmax prediction to a separate file
@@ -295,7 +292,7 @@ class Test:
                     os.path.join(self.output_base, output_fn), "w", **current_profile
                 ) as f:
                     for i in range(self.classes):
-                        f.write(output[:, :, i], i+1)
+                        f.write(output[:, :, i], i + 1)
 
             # ----------------------------------------------------------------
             # Write out the class predictions

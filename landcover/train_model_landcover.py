@@ -164,11 +164,11 @@ class Train:
         input_shape: tuple = (240, 240, 4),
         classes: int = 5,
         verbose: int = 2,
-        lr_num_classes: int =22,
-        hr_labels_index: int=8,
-        lr_labels_index: int=9,
-        hr_label_key: str="data/cheaseapeake_to_hr_labels.txt",
-        lr_label_key: str="data/nlcd_to_lr_labels.txt",
+        lr_num_classes: int = 22,
+        hr_labels_index: int = 8,
+        lr_labels_index: int = 9,
+        hr_label_key: str = "data/cheaseapeake_to_hr_labels.txt",
+        lr_label_key: str = "data/nlcd_to_lr_labels.txt",
     ):
         """Constructor for Train object.
 
