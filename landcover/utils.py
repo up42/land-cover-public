@@ -200,3 +200,22 @@ class LandcoverResults(keras.callbacks.Callback):
             f.close()
 
         self.epoch_num += 1
+
+
+def handle_labels(arr, key_txt):
+    key_array = np.loadtxt(key_txt)
+    trans_arr = arr
+
+    for translation in key_array:
+        # translation is (src label, dst label)
+        scr_l, dst_l = translation
+        if scr_l != dst_l:
+            trans_arr[trans_arr == scr_l] = dst_l
+
+    # translated array
+    return trans_arr
+
+
+def classes_in_key(key_txt):
+    key_array = np.loadtxt(key_txt)
+    return len(np.unique(key_array[:, 1]))
