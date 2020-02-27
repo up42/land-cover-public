@@ -68,9 +68,9 @@ def schedule_stepped(epoch, lr, step_size=10):
         return lr
 
 
-def load_nlcd_stats():
+def load_nlcd_stats(stats_mu="data/nlcd_mu.txt", stats_sigma="data/nlcd_sigma.txt"):
     nlcd_means = np.concatenate(
-        [np.zeros((22, 1)), np.loadtxt("data/nlcd_mu.txt")], axis=1
+        [np.zeros((22, 1)), np.loadtxt(stats_mu)], axis=1
     )
     nlcd_means[nlcd_means == 0] = 0.000001
     nlcd_means[:, 0] = 0
@@ -81,7 +81,7 @@ def load_nlcd_stats():
     nlcd_means[-1, :] = 0
 
     nlcd_vars = np.concatenate(
-        [np.zeros((22, 1)), np.loadtxt("data/nlcd_sigma.txt")], axis=1
+        [np.zeros((22, 1)), np.loadtxt(stats_sigma)], axis=1
     )
     nlcd_vars[nlcd_vars < 0.0001] = 0.0001
     nlcd_class_weights = np.ones((22,))
