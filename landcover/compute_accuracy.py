@@ -137,7 +137,9 @@ def compute_accuracy(
                 cm_dev += get_confusion_matrix(
                     lc[roi_dev > 0].flatten(), pred[roi_dev > 0].flatten(), classes
                 )
-            cm += get_confusion_matrix(lc[roi > 0].flatten(), pred[roi > 0].flatten(), classes)
+            cm += get_confusion_matrix(
+                lc[roi > 0].flatten(), pred[roi > 0].flatten(), classes
+            )
             accuracy = np.sum(lc[roi > 0] == pred[roi > 0]) / np.sum(roi)
             acc_sum += np.sum(lc[roi > 0] == pred[roi > 0])
             acc_num += np.sum(roi)

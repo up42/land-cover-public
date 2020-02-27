@@ -68,53 +68,42 @@ def schedule_stepped(epoch, lr, step_size=10):
         return lr
 
 
-def load_nlcd_stats(stats_mu="data/nlcd_mu.txt", stats_sigma="data/nlcd_sigma.txt"):
-    nlcd_means = np.concatenate(
-        [np.zeros((22, 1)), np.loadtxt(stats_mu)], axis=1
-    )
+def load_nlcd_stats(
+    stats_mu="data/nlcd_mu.txt",
+    stats_sigma="data/nlcd_sigma.txt",
+    class_weights="data/nlcd_class_weights.txt",
+    lr_classes=22,
+):
+    stats_mu = np.loadtxt(stats_mu)
+    assert lr_classes == stats_mu.shape[0]
+    nlcd_means = np.concatenate([np.zeros((lr_classes, 1)), stats_mu], axis=1)
     nlcd_means[nlcd_means == 0] = 0.000001
     nlcd_means[:, 0] = 0
+    if stats_mu == "data/nlcd_mu.txt":
+        nlcd_means = do_nlcd_means_tuning(nlcd_means)
+
+    stats_sigma = np.loadtxt(stats_sigma)
+    assert lr_classes == stats_sigma.shape[0]
+    nlcd_vars = np.concatenate([np.zeros((lr_classes, 1)), stats_sigma], axis=1)
+    nlcd_vars[nlcd_vars < 0.0001] = 0.0001
+
+    # Taken from the training script
+    if not class_weights:
+        nlcd_class_weights = np.ones((lr_classes,))
+    else:
+        nlcd_class_weights = np.loadtxt(class_weights)
+        assert lr_classes == nlcd_class_weights.shape[0]
+
+    return nlcd_class_weights, nlcd_means, nlcd_vars
+
+
+def do_nlcd_means_tuning(nlcd_means):
     nlcd_means[2:, 1] -= 0
     nlcd_means[3:7, 4] += 0.25
     nlcd_means = nlcd_means / np.maximum(0, nlcd_means).sum(axis=1, keepdims=True)
     nlcd_means[0, :] = 0
     nlcd_means[-1, :] = 0
-
-    nlcd_vars = np.concatenate(
-        [np.zeros((22, 1)), np.loadtxt(stats_sigma)], axis=1
-    )
-    nlcd_vars[nlcd_vars < 0.0001] = 0.0001
-    nlcd_class_weights = np.ones((22,))
-
-    # Taken from the training script
-    nlcd_class_weights = np.array(
-        [
-            0.0,
-            1.0,
-            0.5,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            0.5,
-            1.0,
-            1.0,
-            0.0,
-            1.0,
-            1.0,
-            0.0,
-            0.0,
-            0.0,
-            0.5,
-            0.5,
-            1.0,
-            1.0,
-            0.0,
-        ]
-    )
-
-    return nlcd_class_weights, nlcd_means, nlcd_vars
+    return nlcd_means
 
 
 def find_key_by_str(keys, needle):
