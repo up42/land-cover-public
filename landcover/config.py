@@ -21,7 +21,7 @@ MODEL = "unet"
 EPOCHS = 100
 LOSS = "crossentropy"
 LEARNING_RATE = 0.001
-BATCH_SIZE = 16 # use 128 for full dataset (this is for NY only)
+BATCH_SIZE = 16  # use 128 for full dataset (this is for NY only)
 
 # Other settings
 # NOTE: If you want to remove var, assign to None

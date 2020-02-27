@@ -115,10 +115,17 @@ def main():
 
     # Ensure folders are there and no overwrite
     logger.info("Ensuring all folders are there...")
-    assert Path(args.data_dir).is_dir()
+    assert Path(args.data_dir).is_dir(), (
+        "DATA_DIR (%s) does not exist. Make sure path is correct." % args.data_dir
+    )
     Path(args.output_dir).mkdir(parents=True, exist_ok=True)
-    assert Path(args.output_dir).is_dir()
-    assert not (Path(args.output_dir) / Path(args.name)).is_dir()
+    assert Path(args.output_dir).is_dir(), (
+        "OUTPUT_DIR (%s) does not exist. Make sure path is correct." % args.output_dir
+    )
+    assert not (Path(args.output_dir) / Path(args.name)).is_dir(), (
+        "EXPERIMENT_DIR (%s) already exists. Change name or delete directory."
+        % (args.output_dir + args.name)
+    )
 
     # Run training
     train = Train(
