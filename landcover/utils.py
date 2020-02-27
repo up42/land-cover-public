@@ -43,7 +43,7 @@ def load_nlcd_stats(
 ):
     stats_mu = np.loadtxt(stats_mu)
     assert lr_classes == stats_mu.shape[0]
-    assert hr_classes == stats_mu.shape[1]
+    assert hr_classes == (stats_mu.shape[1] + 1)
     nlcd_means = np.concatenate([np.zeros((lr_classes, 1)), stats_mu], axis=1)
     nlcd_means[nlcd_means == 0] = 0.000001
     nlcd_means[:, 0] = 0
@@ -52,7 +52,7 @@ def load_nlcd_stats(
 
     stats_sigma = np.loadtxt(stats_sigma)
     assert lr_classes == stats_sigma.shape[0]
-    assert hr_classes == stats_sigma.shape[1]
+    assert hr_classes == (stats_sigma.shape[1] + 1)
     nlcd_vars = np.concatenate([np.zeros((lr_classes, 1)), stats_sigma], axis=1)
     nlcd_vars[nlcd_vars < 0.0001] = 0.0001
 
