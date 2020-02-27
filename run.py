@@ -83,7 +83,6 @@ def do_args():
         default=config.MODEL,
         choices=["unet", "unet_large", "fcdensenet", "fcn_small"],
         help="Model architecture to use",
-        required=True,
     )
     parser.add_argument(
         "--epochs", type=int, help="Number of epochs", default=config.EPOCHS
