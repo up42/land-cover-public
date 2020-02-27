@@ -20,70 +20,90 @@ logger = get_logger(__name__)
 
 def do_args():
     parser = argparse.ArgumentParser(
-        description="Wrapper utility for training and testing land cover models."
+        description="Wrapper utility for training and testing land cover models.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
-        "-v", "--verbose", type=int, help="Verbosity of keras.fit", default=2
+        "-v",
+        "--verbose",
+        type=int,
+        help="Verbosity of keras.fit",
+        default=config.VERBOSE,
     )
     parser.add_argument("--name", type=str, help="Experiment name", required=True)
     parser.add_argument(
         "--data-dir",
         type=str,
         help="Path to data directory containing the splits CSV files",
-        required=True,
+        default=config.DATA_DIR,
     )
     parser.add_argument(
-        "--output-dir", type=str, help="Output base directory", required=True,
+        "--output-dir",
+        type=str,
+        help="Output base directory",
+        default=config.OUTPUT_DIR,
     )
     parser.add_argument(
         "--training-states",
         nargs="+",
         type=str,
         help="States to use as training",
-        required=True,
+        default=config.TRAINING_STATES,
     )
     parser.add_argument(
         "--validation-states",
         nargs="+",
         type=str,
         help="States to use as validation",
-        required=True,
+        default=config.VALIDATION_STATES,
     )
     parser.add_argument(
         "--superres-states",
         nargs="+",
         type=str,
         help="States to use only superres loss with",
+        default=config.SUPERRES_STATES,
     )
     parser.add_argument(
-        "--test-states", nargs="+", type=str, help="States to test model with",
+        "--test-states",
+        nargs="+",
+        type=str,
+        help="States to test model with",
+        default=config.TEST_STATES,
     )
     parser.add_argument(
         "--do-color",
         action="store_true",
         help="Enable color augmentation",
-        default=False,
+        default=config.DO_COLOR,
     )
     parser.add_argument(
         "--model",
         type=str,
-        default="unet",
+        default=config.MODEL,
         choices=["unet", "unet_large", "fcdensenet", "fcn_small"],
         help="Model architecture to use",
         required=True,
     )
-    parser.add_argument("--epochs", type=int, help="Number of epochs", default=100)
+    parser.add_argument(
+        "--epochs", type=int, help="Number of epochs", default=config.EPOCHS
+    )
     parser.add_argument(
         "--loss",
         type=str,
         help="Loss function",
-        default="crossentropy",
+        default=config.LOSS,
         choices=["crossentropy", "jaccard", "superres"],
     )
     parser.add_argument(
-        "--learning-rate", type=float, help="Learning rate", default=0.001,
+        "--learning-rate",
+        type=float,
+        help="Learning rate",
+        default=config.LEARNING_RATE,
     )
-    parser.add_argument("--batch-size", type=int, help="Batch size", default=128)
+    parser.add_argument(
+        "--batch-size", type=int, help="Batch size", default=config.BATCH_SIZE
+    )
     return parser.parse_args()
 
 
@@ -118,8 +138,10 @@ def main():
     )
     train.run_experiment()
 
-    cm = np.zeros((config.HR_NCLASSES-1, config.HR_NCLASSES-1), dtype=np.float32)
-    cm_dev = np.zeros((config.HR_NCLASSES-1, config.HR_NCLASSES-1), dtype=np.float32)
+    cm = np.zeros((config.HR_NCLASSES - 1, config.HR_NCLASSES - 1), dtype=np.float32)
+    cm_dev = np.zeros(
+        (config.HR_NCLASSES - 1, config.HR_NCLASSES - 1), dtype=np.float32
+    )
     for test_state in args.test_states:
         # Run testing
         ## Get test file name

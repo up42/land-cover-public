@@ -39,7 +39,7 @@ def load_nlcd_stats(
     stats_sigma=config.LR_STATS_SIGMA,
     class_weights=config.LR_CLASS_WEIGHTS,
     lr_classes=config.LR_NCLASSES,
-    hr_classes=config.HR_NCLASSES
+    hr_classes=config.HR_NCLASSES,
 ):
     stats_mu = np.loadtxt(stats_mu)
     assert lr_classes == stats_mu.shape[0]
