@@ -1,45 +1,11 @@
 import os
 import time
-from collections import defaultdict
 
 import numpy as np
 
 import keras
 
-
-NLCD_CLASSES = [
-    0,
-    11,
-    12,
-    21,
-    22,
-    23,
-    24,
-    31,
-    41,
-    42,
-    43,
-    51,
-    52,
-    71,
-    72,
-    73,
-    74,
-    81,
-    82,
-    90,
-    95,
-    255,
-]
-NLCD_CLASSES_TO_IDX_MAP = defaultdict(
-    lambda: 0, {cl: i for i, cl in enumerate(NLCD_CLASSES)}
-)
-
-
-def nlcd_classes_to_idx(nlcd):
-    return np.vectorize(NLCD_CLASSES_TO_IDX_MAP.__getitem__)(np.squeeze(nlcd)).astype(
-        np.uint8
-    )
+import config
 
 
 def humansize(nbytes):
@@ -69,10 +35,10 @@ def schedule_stepped(epoch, lr, step_size=10):
 
 
 def load_nlcd_stats(
-    stats_mu="data/nlcd_mu.txt",
-    stats_sigma="data/nlcd_sigma.txt",
-    class_weights="data/nlcd_class_weights.txt",
-    lr_classes=22,
+    stats_mu=config.LR_STATS_MU,
+    stats_sigma=config.LR_STATS_SIGMA,
+    class_weights=config.LR_CLASS_WEIGHTS,
+    lr_classes=config.LR_NCLASSES,
 ):
     stats_mu = np.loadtxt(stats_mu)
     assert lr_classes == stats_mu.shape[0]

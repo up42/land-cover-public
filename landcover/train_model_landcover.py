@@ -29,6 +29,7 @@ from keras.optimizers import RMSprop, Adam
 from keras.callbacks import LearningRateScheduler, ModelCheckpoint
 
 from helpers import get_logger
+import config
 
 logger = get_logger(__name__)
 
@@ -162,13 +163,13 @@ class Train:
         do_color: bool = False,
         do_superres: bool = False,
         input_shape: tuple = (240, 240, 4),
-        classes: int = 5,
+        classes: int = config.HR_NCLASSES,
         verbose: int = 2,
-        lr_num_classes: int = 22,
-        hr_labels_index: int = 8,
-        lr_labels_index: int = 9,
-        hr_label_key: str = "data/cheaseapeake_to_hr_labels.txt",
-        lr_label_key: str = "data/nlcd_to_lr_labels.txt",
+        lr_num_classes: int = config.LR_NCLASSES,
+        hr_labels_index: int = config.HR_LABEL_INDEX,
+        lr_labels_index: int = config.LR_LABEL_INDEX,
+        hr_label_key: str = config.HR_LABEL_KEY,
+        lr_label_key: str = config.LR_LABEL_KEY,
     ):
         """Constructor for Train object.
 
