@@ -11,6 +11,7 @@ from train_model_landcover import Train
 from testing_model_landcover import Test
 from compute_accuracy import compute_accuracy
 from eval_landcover_results import accuracy_jaccard_np
+import config
 
 from helpers import get_logger
 
@@ -117,8 +118,8 @@ def main():
     )
     train.run_experiment()
 
-    cm = np.zeros((4, 4), dtype=np.float32)
-    cm_dev = np.zeros((4, 4), dtype=np.float32)
+    cm = np.zeros((config.HR_NCLASSES-1, config.HR_NCLASSES-1), dtype=np.float32)
+    cm_dev = np.zeros((config.HR_NCLASSES-1, config.HR_NCLASSES-1), dtype=np.float32)
     for test_state in args.test_states:
         # Run testing
         ## Get test file name
