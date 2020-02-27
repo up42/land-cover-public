@@ -39,9 +39,11 @@ def load_nlcd_stats(
     stats_sigma=config.LR_STATS_SIGMA,
     class_weights=config.LR_CLASS_WEIGHTS,
     lr_classes=config.LR_NCLASSES,
+    hr_classes=config.HR_NCLASSES
 ):
     stats_mu = np.loadtxt(stats_mu)
     assert lr_classes == stats_mu.shape[0]
+    assert hr_classes == stats_mu.shape[1]
     nlcd_means = np.concatenate([np.zeros((lr_classes, 1)), stats_mu], axis=1)
     nlcd_means[nlcd_means == 0] = 0.000001
     nlcd_means[:, 0] = 0
@@ -50,10 +52,10 @@ def load_nlcd_stats(
 
     stats_sigma = np.loadtxt(stats_sigma)
     assert lr_classes == stats_sigma.shape[0]
+    assert hr_classes == stats_sigma.shape[1]
     nlcd_vars = np.concatenate([np.zeros((lr_classes, 1)), stats_sigma], axis=1)
     nlcd_vars[nlcd_vars < 0.0001] = 0.0001
 
-    # Taken from the training script
     if not class_weights:
         nlcd_class_weights = np.ones((lr_classes,))
     else:
