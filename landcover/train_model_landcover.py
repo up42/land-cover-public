@@ -477,7 +477,7 @@ class Train:
         if learning_rate_flag:
             callbacks.append(learning_rate_callback)
 
-        model.fit_generator(
+        model.fit(
             training_generator,
             steps_per_epoch=self.training_steps_per_epoch,
             epochs=self.epochs,
