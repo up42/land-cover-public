@@ -415,7 +415,7 @@ class Train:
 
     def run_experiment(
         self,
-        learning_rate_flag: bool = False,
+        learning_rate_flag: bool = True,
         max_queue_size: int = 256,
         workers: int = 4,
     ):
@@ -475,7 +475,7 @@ class Train:
         ]
 
         if learning_rate_flag:
-            callback.append(learning_rate_callback)
+            callbacks.append(learning_rate_callback)
 
         model.fit_generator(
             training_generator,
