@@ -87,12 +87,12 @@ tensorboard --logdir gs://lc-training-data/logs
 
 Run all tests:
 ```
-pytest --pylint --cov=landcover/
+bash test.sh
 ```
 
 Format code:
 ```
-black
+black .
 ```
 ## References
 
