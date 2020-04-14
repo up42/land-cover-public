@@ -177,7 +177,7 @@ def main():
             pred_dir=prediction_dir,
             input_fn=input_fn,
             classes=config.HR_NCLASSES,
-            hr_label_key=config.HR_LABEL_KEY,
+            hr_key_dict=config.HR_KEY_DICT,
             lr_label_key=config.LR_LABEL_KEY,
         )
         logger.info("Overall accuracy for %s: %.4f", test_state, acc)

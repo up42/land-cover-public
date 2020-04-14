@@ -181,7 +181,7 @@ class Train:
         lr_num_classes: int = config.LR_NCLASSES,
         hr_labels_index: int = config.HR_LABEL_INDEX,
         lr_labels_index: int = config.LR_LABEL_INDEX,
-        hr_label_key: str = config.HR_LABEL_KEY,
+        hr_key_dict: str = config.HR_KEY_DICT,
         lr_label_key: str = config.LR_LABEL_KEY,
         preload_weights: str = config.PRELOAD_WEIGHTS,
         data_type: str = config.DATA_TYPE,
@@ -261,7 +261,7 @@ class Train:
         self.lr_num_classes = lr_num_classes
         self.hr_labels_index = hr_labels_index
         self.lr_labels_index = lr_labels_index
-        self.hr_label_key = hr_label_key
+        self.hr_key_dict = hr_key_dict
         self.lr_label_key = lr_label_key
 
         self.preload_weights = preload_weights
@@ -336,7 +336,7 @@ class Train:
             lr_num_classes=self.lr_num_classes,
             hr_labels_index=self.hr_labels_index,
             lr_labels_index=self.lr_labels_index,
-            hr_label_key=self.hr_label_key,
+            hr_key_dict=self.hr_key_dict,
             lr_label_key=self.lr_label_key,
             do_color_aug=self.do_color,
             do_superres=self.do_superres,
@@ -354,7 +354,7 @@ class Train:
             lr_num_classes=self.lr_num_classes,
             hr_labels_index=self.hr_labels_index,
             lr_labels_index=self.lr_labels_index,
-            hr_label_key=self.hr_label_key,
+            hr_key_dict=self.hr_key_dict,
             lr_label_key=self.lr_label_key,
             do_color_aug=self.do_color,
             do_superres=self.do_superres,

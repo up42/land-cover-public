@@ -1,7 +1,7 @@
 import numpy as np
 import keras.utils
 
-from utils import handle_labels, classes_in_key, to_float
+from utils import handle_labels, classes_in_key, to_float, handle_labels_with_state
 from helpers import get_logger
 
 logger = get_logger(__name__)
@@ -29,6 +29,7 @@ class DataGenerator(keras.utils.Sequence):
     """Generates data for Keras"""
 
     # pylint: disable=too-many-instance-attributes,too-many-arguments,too-many-locals
+    # pylint: disable=dangerous-default-value
     def __init__(
         self,
         patches,
@@ -41,7 +42,7 @@ class DataGenerator(keras.utils.Sequence):
         lr_num_classes=22,
         hr_labels_index=8,
         lr_labels_index=9,
-        hr_label_key="data/cheaseapeake_to_hr_labels.txt",
+        hr_key_dict={".*": "data/cheaseapeake_to_hr_labels.txt"},
         lr_label_key="data/nlcd_to_lr_labels.txt",
         do_color_aug=False,
         do_superres=False,
@@ -71,13 +72,14 @@ class DataGenerator(keras.utils.Sequence):
         self.hr_labels_index = (hr_labels_index,)
         self.lr_labels_index = lr_labels_index
 
-        self.hr_label_key = hr_label_key
+        self.hr_key_dict = hr_key_dict
         self.lr_label_key = lr_label_key
 
         self.data_type = data_type
 
-        if self.hr_label_key:
-            assert self.num_classes == classes_in_key(self.hr_label_key)
+        if self.hr_key_dict:
+            for key in self.hr_key_dict:
+                assert self.num_classes == classes_in_key(self.hr_key_dict[key])
         if self.lr_label_key:
             assert self.lr_num_classes == classes_in_key(self.lr_label_key)
 
@@ -137,9 +139,9 @@ class DataGenerator(keras.utils.Sequence):
                 x_batch[i] = color_aug(x_batch[i])
 
             # setup y_highres
-            if self.hr_label_key:
-                y_train_hr = handle_labels(
-                    data[:, :, self.hr_labels_index], self.hr_label_key
+            if self.hr_key_dict:
+                y_train_hr = handle_labels_with_state(
+                    data[:, :, self.hr_labels_index], state, self.hr_key_dict
                 )
             else:
                 y_train_hr = data[:, :, self.hr_labels_index]

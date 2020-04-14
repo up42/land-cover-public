@@ -11,6 +11,7 @@ import sys
 import os
 import datetime
 import argparse
+from pathlib import Path
 
 # Library imports
 import numpy as np
@@ -25,7 +26,7 @@ from collections import defaultdict
 
 # Setup
 from helpers import get_logger
-from utils import handle_labels
+from utils import handle_labels_with_state, handle_labels
 
 logger = get_logger(__name__)
 
@@ -83,7 +84,7 @@ def compute_accuracy(
     pred_dir: str,
     input_fn: str,
     classes: int = 5,
-    hr_label_key: str = "data/cheaseapeake_to_hr_labels.txt",
+    hr_key_dict={".*": "data/cheaseapeake_to_hr_labels.txt"},
     lr_label_key: str = "data/nlcd_to_lr_labels.txt",
 ):
     data_dir = os.path.dirname(input_fn)
@@ -105,6 +106,8 @@ def compute_accuracy(
     cm_dev = np.zeros((classes - 1, classes - 1,), dtype=np.float32)
     acc_sum = 1e-6
     acc_num = 1e-6
+    state = str(Path(input_fn).name).split("_")[0]
+    logger.info("Using %s state!" % state)
     for i in range(len(fns)):
         naip_fn = os.path.join(data_dir, fns[i][0])
         lc_fn = os.path.join(data_dir, fns[i][1])
@@ -129,9 +132,8 @@ def compute_accuracy(
 
         lc = np.squeeze(lc).astype(int)
         pred = np.squeeze(pred).astype(int)
-        if hr_label_key:
-            lc = handle_labels(lc, hr_label_key)
-            pred = handle_labels(pred, hr_label_key)
+        if hr_key_dict:
+            lc = handle_labels_with_state(lc, state, hr_key_dict)
 
         roi = (lc > 0) & (pred > 0)
         roi_dev = (lc > 0) & (pred > 0) & (nlcd >= 21) & (nlcd <= 24)

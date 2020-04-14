@@ -4,6 +4,7 @@ import io
 import collections
 import itertools
 import csv
+import re
 
 import numpy as np
 import tensorflow as tf
@@ -189,6 +190,17 @@ def handle_labels(arr, key_txt):
 def classes_in_key(key_txt):
     key_array = np.loadtxt(key_txt)
     return len(np.unique(key_array[:, 1]))
+
+
+def handle_labels_with_state(arr, state, key_dict):
+    key_txt = ""
+    for key in key_dict:
+        if re.match(r"%s" % key, state):
+            key_txt = key_dict[key]
+    if key_txt:
+        return handle_labels(arr, key_txt)
+    else:
+        return arr
 
 
 def to_float(arr, data_type=config.DATA_TYPE):

@@ -38,7 +38,9 @@ LR_LABEL_INDEX = 9
 DATA_TYPE = "int8"
 
 ## Keys for transformation of labels
-HR_LABEL_KEY = "data/cheaseapeake_to_hr_labels.txt"
+# .* to match all states, can use any regex pattern, use various keys for
+# different class conversion per state
+HR_KEY_DICT = {".*": "data/cheaseapeake_to_hr_labels.txt"}
 LR_LABEL_KEY = "data/nlcd_to_lr_labels.txt"
 
 ## COLORMAP files for labels

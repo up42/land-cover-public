@@ -130,7 +130,7 @@ def test_train_uint16_data():
             lr_num_classes=11,
             hr_labels_index=4,
             lr_labels_index=5,
-            hr_label_key="data/ou_to_hr_labels.txt",
+            hr_key_dict={"ou": "data/ou_to_hr_labels.txt"},
             lr_label_key="",
             data_type="int16",
         )
