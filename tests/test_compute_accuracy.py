@@ -39,3 +39,12 @@ def test_function_compute_accuracy():
     assert round(acc, 2) == 0.04
     assert cm.shape == (4, 4)
     assert cm_dev.shape == (4, 4)
+
+
+def test_compute_accuracy_allnan():
+    mock_data = FILE_DIR / "mock_data"
+    input_csv = mock_data / "test_extended-test_tiles_nan.csv"
+    acc, cm, cm_dev = compute_accuracy(mock_data, input_csv)
+    assert round(acc, 2) == 1
+    assert cm.shape == (4, 4)
+    assert cm_dev.shape == (4, 4)

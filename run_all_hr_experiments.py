@@ -54,7 +54,7 @@ TEST_STATE_LIST = [
 
 GPU_IDX = 0
 for train_state in TRAIN_STATE_LIST:
-    gpu_id = _GPU_IDS[GPU_IDX]
+    GPU_ID = _GPU_IDS[GPU_IDX]
 
     args = {
         "output": OUTPUT_DIR,
@@ -62,7 +62,7 @@ for train_state in TRAIN_STATE_LIST:
         "TRAIN_STATE_LIST": train_state,
         "val_state_list": train_state,
         "superres_state_list": "",
-        "gpu": gpu_id,
+        "gpu": GPU_ID,
         "data_dir": DATASET_DIR,
         "log_name": "log.txt",
         "learning_rate": 0.001,
@@ -71,7 +71,7 @@ for train_state in TRAIN_STATE_LIST:
         "model_type": "unet_large",
     }
 
-    command_train = (
+    COMMAND_TRAIN = (
         "python landcover/train_model_landcover.py "
         "--output {output} "
         "--name {exp_name} "
@@ -85,7 +85,7 @@ for train_state in TRAIN_STATE_LIST:
         "--loss {loss} "
         "--batch_size {batch_size} "
     ).format(**args)
-    JOBS_PER_GPU[GPU_IDX].append((command_train, args))
+    JOBS_PER_GPU[GPU_IDX].append((COMMAND_TRAIN, args))
 
     for test_state in TEST_STATE_LIST:
 
@@ -93,26 +93,26 @@ for train_state in TRAIN_STATE_LIST:
             "test_csv": "{}/{}_extended-test_tiles.csv".format(DATASET_DIR, test_state),
             "output": "{}/train-output_{}/".format(OUTPUT_DIR, train_state),
             "exp_name": "test-output_{}".format(test_state),
-            "gpu": gpu_id,
+            "gpu": GPU_ID,
             "log_name": "log_test_{}.txt".format(test_state),
         }
-        command_test = (
+        COMMAND_TEST = (
             "python landcover/testing_model_landcover.py "
             "--input {test_csv} "
             "--output {output}/{exp_name}/ "
             "--model {output}/final_model.h5 "
             "--gpu {gpu}"
         ).format(**args)
-        JOBS_PER_GPU[GPU_IDX].append((command_test, args))
+        JOBS_PER_GPU[GPU_IDX].append((COMMAND_TEST, args))
 
         args = args.copy()
         args["log_name"] = "log_acc_{}.txt".format(test_state)
-        command_acc = (
+        COMMAND_ACC = (
             "python landcover/compute_accuracy.py "
             "--input {test_csv} "
             "--output {output}/{exp_name}/"
         ).format(**args)
-        JOBS_PER_GPU[GPU_IDX].append((command_acc, args))
+        JOBS_PER_GPU[GPU_IDX].append((COMMAND_ACC, args))
 
     GPU_IDX = (GPU_IDX + 1) % NUM_GPUS
 

@@ -56,6 +56,9 @@ def do_args(arg_list, name):
     parser.add_argument(
         "--classes", type=int, default=5, help="Number of target classes",
     )
+    parser.add_argument(
+        "--nodata", type=int, default=0, help="Nodata value in imagery",
+    )
 
     return parser.parse_args(arg_list)
 
@@ -84,6 +87,7 @@ def compute_accuracy(
     pred_dir: str,
     input_fn: str,
     classes: int = 5,
+    nodata: int = 0,
     hr_key_dict={".*": "data/cheaseapeake_to_hr_labels.txt"},
     lr_label_key: str = "data/nlcd_to_lr_labels.txt",
 ):
@@ -118,6 +122,11 @@ def compute_accuracy(
         pred = pred_f.read()
         pred_f.close()
 
+        naip_f = rasterio.open(naip_fn, "r")
+        naip = naip_f.read()
+        nodataval = nodata
+        naip_f.close()
+
         lc_f = rasterio.open(lc_fn, "r")
         lc = lc_f.read()
         lc_f.close()
@@ -134,6 +143,11 @@ def compute_accuracy(
         pred = np.squeeze(pred).astype(int)
         if hr_key_dict:
             lc = handle_labels_with_state(lc, state, hr_key_dict)
+
+        # Handle NAN in source imagery
+        logger.info("Using %s as nan", str(nodataval))
+        lc[naip[0] == nodataval] = 0
+        pred[naip[0] == nodataval] = 0
 
         roi = (lc > 0) & (pred > 0)
         roi_dev = (lc > 0) & (pred > 0) & (nlcd >= 21) & (nlcd <= 24)
@@ -162,7 +176,9 @@ def compute_accuracy(
 def main():
     program_name = "Accuracy computing script"
     args = do_args(sys.argv[1:], program_name)
-    acc, cm, cm_dev = compute_accuracy(args.output, args.input_fn, args.classes)
+    acc, cm, cm_dev = compute_accuracy(
+        args.output, args.input_fn, args.classes, args.nodata
+    )
     print("-----------------------------")
     print(acc)
     print(cm)
