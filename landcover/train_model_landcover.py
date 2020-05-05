@@ -375,24 +375,27 @@ class Train:
         # Build the model
         optimizer = RMSprop(self.learning_rate)
         if self.model_type == "unet":
-            model = models.unet(self.input_shape, self.classes, optimizer, self.loss)
+            model = models.unet(self.input_shape, self.classes, self.loss,)
         elif self.model_type == "unet_large":
-            model = models.unet_large(
-                self.input_shape, self.classes, optimizer, self.loss
-            )
+            model = models.unet_large(self.input_shape, self.classes, self.loss,)
         elif self.model_type == "fcdensenet":
-            model = models.fcdensenet(
-                self.input_shape, self.classes, optimizer, self.loss
-            )
+            model = models.fcdensenet(self.input_shape, self.classes, self.loss,)
         elif self.model_type == "fcn_small":
-            model = models.fcn_small(
-                self.input_shape, self.classes, optimizer, self.loss
-            )
+            model = models.fcn_small(self.input_shape, self.classes, self.loss)
         if self.preload_weights:
             logger.info("=====================================================")
             logger.info(f"Using weights from {self.preload_weights}")
             logger.info("=====================================================")
             model.load_weights(self.preload_weights)
+            if config.FINE_TUNE_AT > 0:
+                for layer in model.layers[: config.FINE_TUNE_AT]:
+                    layer.trainable = False
+                logger.info("=====================================================")
+                logger.info(f"Fine tuning from %d layer" % config.FINE_TUNE_AT)
+                logger.info("=====================================================")
+
+        model = models.compile_model(model, self.loss, optimizer)
+
         model.run_eagerly = True
         model.summary()
         return model

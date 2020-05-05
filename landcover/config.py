@@ -56,3 +56,5 @@ LR_CLASS_WEIGHTS = "data/nlcd_class_weights.txt"
 # Will load file if not empty
 # MAKE SURE ARCHITECTURE IS THE SAME
 PRELOAD_WEIGHTS = ""
+# Set fine tune to 0 if you don't want to frezze any layers
+FINE_TUNE_AT = 80

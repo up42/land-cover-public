@@ -109,32 +109,32 @@ def sr_loss(nlcd_class_weights, nlcd_means, nlcd_vars):
     return loss
 
 
-def unet(img_shape, num_classes, optimizer, loss):
+def unet(img_shape, num_classes, loss):
     i, o = UNet(img_shape, dims=[64, 32, 32, 32, 32], out_ch=num_classes)
     o = Activation("softmax", name="outputs_hr")(o)
-    return make_model(i, o, optimizer, loss)
+    return make_model(i, o, loss)
 
 
-def unet_large(img_shape, num_classes, optimizer, loss):
+def unet_large(img_shape, num_classes, loss):
     i, o = UNet(img_shape, dims=[32, 64, 128, 256, 128], out_ch=num_classes)
     o = Activation("softmax", name="outputs_hr")(o)
-    return make_model(i, o, optimizer, loss)
+    return make_model(i, o, loss)
 
 
-def fcdensenet(img_shape, num_classes, optimizer, loss):
+def fcdensenet(img_shape, num_classes, loss):
     i, o = FC_DenseNet(img_shape, dims=[32, 16, 16, 16, 16], out_ch=num_classes)
     o = Activation("softmax", name="outputs_hr")(o)
-    return make_model(i, o, optimizer, loss)
+    return make_model(i, o, loss)
 
 
-def fcn_small(img_shape, num_classes, optimizer, loss):
+def fcn_small(img_shape, num_classes, loss):
     i, o = FCN_Small(img_shape, out_ch=num_classes)
     o = Activation("softmax", name="outputs_hr")(o)
-    return make_model(i, o, optimizer, loss)
+    return make_model(i, o, loss)
 
 
 def unet_from_segmentation_models(
-    img_shape, num_classes, optimizer, loss, backbone_name="resnet18"
+    img_shape, num_classes, loss, backbone_name="resnet18"
 ):
     model = seg_Unet(
         backbone_name=backbone_name,
@@ -147,17 +147,21 @@ def unet_from_segmentation_models(
     model.layers[-1].name = "logits"
     i = model.layers[0]
     o = model.layers[-1]
-    return make_model(i, o, optimizer, loss)
+    return make_model(i, o, loss)
 
 
-def make_model(inputs, outputs, optimizer, loss):
+def make_model(inputs, outputs, loss):
+    if loss == "superres":
+        outputs_sr = Lambda(lambda x: x, name="outputs_sr")(outputs)
+        model = Model(inputs=inputs, outputs=[outputs, outputs_sr])
+    else:
+        model = Model(inputs=inputs, outputs=outputs)
+
+    return model
+
+
+def compile_model(model, loss, optimizer):
     with MIRRORED_STRATEGY.scope():
-        if loss == "superres":
-            outputs_sr = Lambda(lambda x: x, name="outputs_sr")(outputs)
-            model = Model(inputs=inputs, outputs=[outputs, outputs_sr])
-        else:
-            model = Model(inputs=inputs, outputs=outputs)
-
         if loss == "jaccard":
             model.compile(
                 loss=jaccard_loss,
